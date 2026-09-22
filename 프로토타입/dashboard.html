@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>응답 대시보드</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--line:#e4e7ec;--text:#111827;--muted:#6b7280;--accent:#2563eb;--ok:#059669;--bad:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#171a21;--line:#2a2f3a;--text:#e5e7eb;--muted:#9ca3af;--accent:#60a5fa}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",system-ui,sans-serif}
+main{max-width:1200px;margin:0 auto;padding:24px 16px}
+h1{font-size:20px;margin:0 0 16px}h2{font-size:14px;color:var(--muted);font-weight:600;margin:24px 0 8px;text-transform:uppercase;letter-spacing:.04em}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tile span{display:block;color:var(--muted);font-size:12px}.tile strong{font-size:24px;font-weight:700}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+input,select,button{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text)}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent);cursor:pointer}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:auto}
+table{border-collapse:collapse;width:100%;min-width:720px}th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;white-space:nowrap}
+th{position:sticky;top:0;background:var(--card);font-weight:600;color:var(--muted);font-size:12px}
+td.payload{white-space:normal;max-width:520px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted)}
+.kind{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;background:var(--bg);border:1px solid var(--line)}
+.up{color:var(--ok)}.down{color:var(--bad)}.muted{color:var(--muted)}
+.dist{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.dist .tile div{display:flex;justify-content:space-between;gap:8px;padding:2px 0;font-size:13px}
+#login{max-width:360px;margin:80px auto;display:grid;gap:10px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<form id="login"><h1>응답 대시보드</h1><input id="pw" type="password" placeholder="대시보드 비밀번호" autocomplete="current-password" required><button class="primary">열기</button><p id="loginError" class="down" hidden>비밀번호가 맞지 않습니다.</p></form>
+
+<section id="board" hidden>
+<h1>응답 대시보드 <small id="updated" class="muted" style="font-weight:400;font-size:12px"></small></h1>
+<div class="tiles" id="tiles"></div>
+
+<h2>설문 분포</h2>
+<div class="dist" id="dist"></div>
+
+<h2>세션별 결과</h2>
+<div class="card"><table id="sessions"><thead><tr><th>시작</th><th>방문자</th><th>세션</th><th>설문</th><th>1스테이지 종료</th><th>1스테이지 손익</th><th>2스테이지 순자산</th><th>선택 수</th></tr></thead><tbody></tbody></table></div>
+
+<h2>전체 이벤트</h2>
+<div class="bar">
+ <input id="q" placeholder="검색 (방문자, 세션, 내용)">
+ <select id="kind"><option value="">모든 종류</option></select>
+ <select id="stage"><option value="">모든 스테이지</option><option value="1">1스테이지</option><option value="2">2스테이지</option></select>
+ <span id="count" class="muted"></span>
+ <button id="csv" style="margin-left:auto">CSV 내려받기</button>
+ <button id="reload">새로고침</button>
+</div>
+<div class="card"><table id="events"><thead><tr><th>시각</th><th>방문자</th><th>세션</th><th>스테이지</th><th>턴</th><th>종류</th><th>내용</th></tr></thead><tbody></tbody></table></div>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const won=n=>n==null?'—':Math.round(n).toLocaleString('ko-KR')+'원';
+const when=s=>new Date(s).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+const tail=s=>String(s||'').slice(0,8);
+const KIND_LABEL={choice:'선택',stage2_choice:'선택(2)',expense_reduce:'절약',answer:'설문 응답',stage2_answer:'설문 응답(2)',form_open:'설문 열기',form_complete:'설문 완료',reward_granted:'지원금',offer_skipped:'설문 건너뜀',restart:'다시 시작',stage1_result:'1스테이지 결과',stage2_result:'2스테이지 결과',support:'긴급 지원'};
+let rows=[],key=null;
+try{key=sessionStorage.getItem('dashboard-key');}catch{}
+
+async function load(){
+ const r=await fetch('/api/events',{headers:{'x-dashboard-key':key}});
+ if(r.status===401){key=null;try{sessionStorage.removeItem('dashboard-key');}catch{}$('#login').hidden=false;$('#board').hidden=true;$('#loginError').hidden=false;return;}
+ rows=await r.json();
+ try{sessionStorage.setItem('dashboard-key',key);}catch{}
+ $('#login').hidden=true;$('#board').hidden=false;$('#loginError').hidden=true;
+ $('#updated').textContent='업데이트 '+new Date().toLocaleTimeString('ko-KR');
+ render();
+}
+$('#login').onsubmit=e=>{e.preventDefault();key=$('#pw').value;load();};
+$('#reload').onclick=load;
+['#q','#kind','#stage'].forEach(s=>$(s).oninput=renderEvents);
+if(key)load();
+
+function render(){
+ const visitors=new Set(rows.map(r=>r.visitor_id)),sessions=groupSessions();
+ const surveys=rows.filter(r=>r.kind==='answer'&&r.payload?.form==='survey');
+ const s1=rows.filter(r=>r.kind==='stage1_result'),s2=rows.filter(r=>r.kind==='stage2_result');
+ const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+ $('#tiles').innerHTML=[
+  ['방문자',visitors.size],['세션',sessions.length],['설문 완료',surveys.length],
+  ['1스테이지 완주',s1.filter(r=>!r.payload.ending).length+' / '+s1.length],
+  ['평균 1스테이지 손익',won(avg(s1.map(r=>r.payload.profit)))],
+  ['2스테이지 완료',s2.length],['총 이벤트',rows.length]
+ ].map(([k,v])=>`<div class="tile"><span>${k}</span><strong>${esc(v)}</strong></div>`).join('');
+
+ const fields=[['age','연령대'],['gender','성별'],['experience','투자 경험'],['duration','투자 기간'],['investments','주요 투자 대상'],['holdingPeriod','보유 기간']];
+ const choices=count(rows.filter(r=>r.kind==='choice').map(r=>r.payload.action));
+ const reflections=count(rows.filter(r=>['answer','stage2_answer'].includes(r.kind)&&r.payload?.form!=='survey').map(r=>r.payload.answers?.reflection).filter(Boolean));
+ $('#dist').innerHTML=fields.map(([f,label])=>dist(label,count(surveys.map(r=>r.payload.answers?.[f]).filter(Boolean)))).join('')+dist('1스테이지 선택 종류',choices)+dist('회고 응답',reflections);
+
+ $('#sessions tbody').innerHTML=sessions.map(s=>`<tr><td>${when(s.start)}</td><td title="${esc(s.visitor)}">${esc(tail(s.visitor))}</td><td title="${esc(s.id)}">${esc(tail(s.id))}</td><td>${s.survey?esc([s.survey.age,s.survey.gender,s.survey.experience].filter(Boolean).join(' · ')):'<span class="muted">없음</span>'}</td><td>${s.r1?esc(s.r1.ending==='expense'?'중도 종료(지출)':s.r1.ending||'완주'):'<span class="muted">진행 중</span>'}</td><td class="${s.r1?.profit>=0?'up':'down'}">${s.r1?(s.r1.profit>=0?'+':'')+won(s.r1.profit):'—'}</td><td>${s.r2?won(s.r2.value?.equity):'—'}</td><td>${s.choices}</td></tr>`).join('')||'<tr><td colspan="8" class="muted">아직 기록이 없습니다.</td></tr>';
+
+ const kinds=[...new Set(rows.map(r=>r.kind))].sort();
+ $('#kind').innerHTML='<option value="">모든 종류</option>'+kinds.map(k=>`<option value="${k}">${esc(KIND_LABEL[k]||k)}</option>`).join('');
+ renderEvents();
+}
+function count(list){const m={};for(const x of list)m[x]=(m[x]||0)+1;return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+function dist(label,entries){return `<div class="tile"><span>${esc(label)}</span>${entries.length?entries.map(([k,v])=>`<div><span>${esc(k)}</span><b>${v}</b></div>`).join(''):'<div class="muted">응답 없음</div>'}</div>`;}
+function groupSessions(){
+ const m=new Map();
+ for(const r of [...rows].reverse()){
+  const s=m.get(r.session_id)||{id:r.session_id,visitor:r.visitor_id,start:r.created_at,choices:0};
+  if(r.kind==='choice'||r.kind==='stage2_choice')s.choices++;
+  if(r.kind==='answer'&&r.payload?.form==='survey')s.survey=r.payload.answers;
+  if(r.kind==='stage1_result')s.r1=r.payload;
+  if(r.kind==='stage2_result')s.r2=r.payload;
+  m.set(r.session_id,s);
+ }
+ return [...m.values()].sort((a,b)=>b.start.localeCompare(a.start));
+}
+function summary(r){
+ const p=r.payload||{};
+ switch(r.kind){
+  case 'choice':case 'stage2_choice':return p.action+(p.cash!=null?` · 현금 ${won(p.cash)} · 건강 ${p.health}`:'');
+  case 'answer':case 'stage2_answer':return `${p.form}: `+Object.entries(p.answers||{}).filter(([k,v])=>v&&!['privacyConsent','ageConfirmation'].includes(k)).map(([k,v])=>`${k}=${v}`).join(', ');
+  case 'stage1_result':return `${p.ending?'중도 종료':'완주'} · 손익 ${won(p.profit)} · 자산 ${won(p.equity)} · 건강 ${p.health}`;
+  case 'stage2_result':return `순자산 ${won(p.value?.equity)} · 현금 ${won(p.cash)} · 건강 ${p.health}`;
+  default:return JSON.stringify(p);
+ }
+}
+function filtered(){
+ const q=$('#q').value.trim().toLowerCase(),kind=$('#kind').value,stage=$('#stage').value;
+ return rows.filter(r=>(!kind||r.kind===kind)&&(!stage||String(r.stage)===stage)&&(!q||(r.visitor_id+r.session_id+JSON.stringify(r.payload)).toLowerCase().includes(q)));
+}
+function renderEvents(){
+ const list=filtered();
+ $('#count').textContent=`${list.length}건`;
+ $('#events tbody').innerHTML=list.slice(0,1000).map(r=>`<tr><td>${when(r.created_at)}</td><td title="${esc(r.visitor_id)}">${esc(tail(r.visitor_id))}</td><td title="${esc(r.session_id)}">${esc(tail(r.session_id))}</td><td>${r.stage??''}</td><td>${r.turn??''}</td><td><span class="kind">${esc(KIND_LABEL[r.kind]||r.kind)}</span></td><td class="payload">${esc(summary(r))}</td></tr>`).join('')||'<tr><td colspan="7" class="muted">해당 조건의 기록이 없습니다.</td></tr>';
+}
+$('#csv').onclick=()=>{
+ const cols=['id','created_at','visitor_id','session_id','stage','turn','kind','payload'];
+ const cell=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+ const csv='﻿'+[cols.join(','),...filtered().map(r=>cols.map(c=>cell(c==='payload'?JSON.stringify(r.payload):r[c])).join(','))].join('\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='events.csv';a.click();
+};
+</script>
+</body>
+</html>

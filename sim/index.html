@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>닷컴버블 모의투자</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#fff;--fg:#111;--mut:#666;--line:#ddd;--up:#d33;--dn:#26c;--acc:#0a7}
+@media(prefers-color-scheme:dark){:root{--bg:#141414;--fg:#eee;--mut:#999;--line:#333}}
+body{margin:0;padding:16px;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,sans-serif;max-width:1100px;margin:auto}
+h1{font-size:18px;margin:0 0 8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+button,select,input{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+button{cursor:pointer}button.buy{border-color:var(--up);color:var(--up)}button.sell{border-color:var(--dn);color:var(--dn)}
+canvas{width:100%;height:380px;display:block;border:1px solid var(--line);border-radius:8px;touch-action:none}
+table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid var(--line);padding:4px 6px;text-align:right}th:first-child,td:first-child{text-align:left}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.tag{display:inline-block;padding:1px 6px;border-radius:10px;background:var(--acc);color:#fff;font-size:11px;margin:1px}
+.mut{color:var(--mut)}#hint{min-height:1.5em}
+</style>
+</head>
+<body>
+<h1>닷컴버블 모의투자 (1998-01 ~ 2002-12, 실제 데이터)</h1>
+<div class="row">
+  <select id="sym"></select>
+  <b id="date"></b> <b id="px"></b>
+  <button onclick="step(1)">+1일</button><button onclick="step(5)">+1주</button><button onclick="step(21)">+1달</button>
+  <button id="play" onclick="toggle()">▶ 자동</button>
+  <span class="mut">현금 <b id="cash"></b> · 평가 <b id="equity"></b> · 수익률 <b id="ret"></b></span>
+</div>
+<canvas id="c"></canvas>
+<div class="row">
+  <input id="qty" type="number" min="1" value="100" style="width:90px"> 주
+  <button class="buy" onclick="trade(1)">매수</button><button class="sell" onclick="trade(-1)">매도</button>
+  <button onclick="trade(-1,true)">전량매도</button>
+  <span id="pos" class="mut"></span>
+</div>
+<div id="hint" class="mut"></div>
+<div class="grid">
+  <div><h3>거래 기록 · 편향 태깅</h3><table id="log"><thead><tr><th>날짜</th><th>종목</th><th>구분</th><th>수량</th><th>가격</th><th>자동 탐지</th><th>내 태그</th></tr></thead><tbody></tbody></table></div>
+  <div><h3>편향 사례 요약</h3><div id="sum"></div>
+  <p class="mut">자동 탐지 규칙은 거래 시점 이전 데이터만 사용. 최종 판단은 사람이 태그로 확정.</p></div>
+</div>
+<script src="data.js"></script>
+<script>
+// ── 편향 목록 (팀 정의에 맞게 수정) ──
+const BIASES={fomo:'추격매수/군집',anchor:'앵커링',recency:'최근성',disposition:'처분효과',lossav:'손실회피',overconf:'과신/과잉거래'};
+// 규칙: 거래 시점 이전 데이터만 봄 (미래 정보 금지)
+const RULES={
+  fomo:(t,S)=>t.side>0&&S.i>=20&&S.p/S.px[S.i-20]-1>0.25,              // 20일 +25% 후 매수
+  recency:(t,S)=>t.side>0&&S.i>=5&&[1,2,3,4,5].every(k=>S.px[S.i-k+1]>S.px[S.i-k]), // 5연속 상승 후 매수
+  anchor:(t,S)=>t.side>0&&S.i>=250&&S.p<0.6*Math.max(...S.px.slice(S.i-250,S.i)), // 52주 고점 대비 -40% "싸졌다" 매수
+  disposition:(t,S)=>t.side<0&&t.pnl>0&&t.pnl<0.08&&S.losers>0,        // 소폭 익절하면서 손실종목은 보유
+  lossav:(t,S)=>t.side<0&&t.pnl<-0.3&&t.held>120,                      // -30% 이상, 120일 넘게 버틴 뒤 매도
+  overconf:(t,S)=>S.recent>=8,                                          // 최근 30거래일 8회 이상 거래
+};
+const SYMS=Object.keys(DATA), N=DATA[SYMS[0]].length;
+let sym=SYMS[0], day=0, cash=10000, pos={}, log=[], timer=null; // pos[sym]={q,cost,since}
+const $=id=>document.getElementById(id), fmt=n=>n.toLocaleString('ko',{maximumFractionDigits:2});
+$('sym').innerHTML=SYMS.map(s=>`<option>${s}</option>`).join(''); $('sym').onchange=e=>{sym=e.target.value;render()};
+const price=(s,i)=>DATA[s][i][1];
+function equity(){return cash+SYMS.reduce((a,s)=>a+(pos[s]?.q||0)*price(s,day),0)}
+function step(n){day=Math.min(N-1,day+n);render();if(day===N-1)stop()}
+function toggle(){timer?stop():(timer=setInterval(()=>step(1),120),$('play').textContent='⏸ 정지')}
+function stop(){clearInterval(timer);timer=null;$('play').textContent='▶ 자동'}
+function trade(side,all){
+  const p=price(sym,day), P=pos[sym]||{q:0,cost:0,since:day};
+  let q=all?P.q:+$('qty').value|0; if(q<=0)return;
+  if(side>0){q=Math.min(q,Math.floor(cash/p)); if(!q)return alert('현금 부족');}
+  else q=Math.min(q,P.q); if(!q)return;
+  const t={day,sym,side,q,p,pnl:side<0?p/(P.cost/P.q)-1:0,held:side<0?day-P.since:0,tags:[],my:''};
+  cash-=side*q*p;
+  if(side>0){P.cost+=q*p;if(!P.q)P.since=day;P.q+=q}else{P.cost-=q*(P.cost/P.q);P.q-=q}
+  pos[sym]=P.q?P:undefined;
+  // 자동 탐지
+  const px=DATA[sym].map(d=>d[1]);
+  const S={i:day,p,px,losers:SYMS.filter(s=>pos[s]&&price(s,day)<pos[s].cost/pos[s].q).length,recent:log.filter(x=>day-x.day<=30).length+1};
+  t.tags=Object.keys(RULES).filter(k=>RULES[k](t,S));
+  log.push(t); render();
+}
+function render(){
+  const p=price(sym,day), P=pos[sym];
+  $('date').textContent=DATA[sym][day][0]; $('px').textContent='$'+fmt(p);
+  $('cash').textContent='$'+fmt(cash); const e=equity(); $('equity').textContent='$'+fmt(e);
+  $('ret').textContent=(e/10000-1>=0?'+':'')+fmt((e/10000-1)*100)+'%'; $('ret').style.color=e>=10000?'var(--up)':'var(--dn)';
+  $('pos').textContent=P?`${sym} ${P.q}주 · 평단 $${fmt(P.cost/P.q)} · 평가손익 ${fmt((p*P.q/P.cost-1)*100)}%`:`${sym} 보유 없음`;
+  // 보유중 편향 힌트(손실회피)
+  const held=SYMS.filter(s=>pos[s]&&price(s,day)/(pos[s].cost/pos[s].q)<0.7&&day-pos[s].since>120);
+  $('hint').textContent=held.length?`⚠ ${held.join(', ')}: -30% 이상을 120일 넘게 보유 중 → 손실회피 의심`:'';
+  draw(); renderLog();
+}
+function draw(){
+  const c=$('c'), dpr=devicePixelRatio||1, W=c.clientWidth, H=c.clientHeight;
+  c.width=W*dpr; c.height=H*dpr; const g=c.getContext('2d'); g.scale(dpr,dpr);
+  const d=DATA[sym].slice(0,day+1), lo=Math.min(...d.map(x=>x[1]))*0.95, hi=Math.max(...d.map(x=>x[1]))*1.05;
+  const X=i=>40+(W-50)*i/Math.max(day,60), Y=v=>H-20-(H-40)*(v-lo)/(hi-lo);  // x축은 최소 60일 기준
+  g.strokeStyle=getComputedStyle(document.body).getPropertyValue('--line'); g.fillStyle=getComputedStyle(document.body).getPropertyValue('--mut'); g.font='11px system-ui';
+  for(let k=0;k<=4;k++){const v=lo+(hi-lo)*k/4,y=Y(v);g.beginPath();g.moveTo(40,y);g.lineTo(W-10,y);g.stroke();g.fillText(v.toFixed(v<10?2:0),2,y+4)}
+  d.forEach((x,i)=>{if(x[0].endsWith('-01-02')||x[0].endsWith('-07-01'))g.fillText(x[0].slice(0,7),X(i)-18,H-5)});
+  g.strokeStyle=getComputedStyle(document.body).getPropertyValue('--fg'); g.lineWidth=1.5; g.beginPath();
+  d.forEach((x,i)=>i?g.lineTo(X(i),Y(x[1])):g.moveTo(X(i),Y(x[1]))); g.stroke();
+  log.filter(t=>t.sym===sym).forEach(t=>{g.fillStyle=t.side>0?'var(--up)':'var(--dn)';g.fillStyle=t.side>0?'#d33':'#26c';g.beginPath();
+    const x=X(t.day),y=Y(t.p); t.side>0?(g.moveTo(x,y+12),g.lineTo(x-6,y+22),g.lineTo(x+6,y+22)):(g.moveTo(x,y-12),g.lineTo(x-6,y-22),g.lineTo(x+6,y-22)); g.fill();
+    if(t.tags.length){g.fillStyle='#0a7';g.fillText(t.tags.map(k=>BIASES[k]).join(','),x-20,t.side>0?y+34:y-26)}});
+}
+function renderLog(){
+  const opts=`<option value="">-</option>`+Object.entries(BIASES).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+  $('log').tBodies[0].innerHTML=log.map((t,i)=>`<tr><td>${DATA[t.sym][t.day][0]}</td><td>${t.sym}</td><td style="color:${t.side>0?'var(--up)':'var(--dn)'}">${t.side>0?'매수':'매도'}</td><td>${t.q}</td><td>${fmt(t.p)}${t.side<0?` <span class="mut">(${fmt(t.pnl*100)}%)</span>`:''}</td>
+    <td>${t.tags.map(k=>`<span class="tag">${BIASES[k]}</span>`).join('')||'<span class="mut">-</span>'}</td>
+    <td><select onchange="log[${i}].my=this.value;renderLog()">${opts.replace(`value="${t.my}"`,`value="${t.my}" selected`)}</select></td></tr>`).reverse().join('');
+  const cnt={}; log.forEach(t=>{new Set([...t.tags,t.my].filter(Boolean)).forEach(k=>cnt[k]=(cnt[k]||0)+1)});
+  $('sum').innerHTML=Object.keys(BIASES).map(k=>`<div>${BIASES[k]}: <b>${cnt[k]||0}</b>건</div>`).join('')+`<div class="mut">총 거래 ${log.length}건</div>`;
+}
+window.onresize=draw; render();
+</script>
+</body>
+</html>

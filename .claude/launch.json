@@ -1,0 +1,3 @@
+{"version":"0.0.1","configurations":[
+ {"name":"prototype","runtimeExecutable":"node","runtimeArgs":["프로토타입/dev.mjs"],"port":4174},
+ {"name":"sim","runtimeExecutable":"python3","runtimeArgs":["-m","http.server","8765","-d","sim"],"port":8765}]}
