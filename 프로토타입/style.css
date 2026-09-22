@@ -88,3 +88,7 @@ dialog#resource-detail:not([open]){display:none}dialog#resource-detail::backdrop
 .privacy-notice{padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--paper);margin:16px 0}.privacy-notice strong{font-size:13px}.privacy-notice p{font-size:12px;line-height:1.7;margin:10px 0 0}
 
 #research-dialog .privacy-check,.privacy-check{display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.6;margin:14px 0}#research-dialog .privacy-check input,.privacy-check input{flex:0 0 18px;width:18px;height:18px;margin:2px 0 0;accent-color:var(--blue)}
+
+/* Intro action color swap */
+.intro .intro-actions .primary{background:var(--blue-light);color:var(--blue);border:1px solid #cdd5f5}
+.intro .intro-actions .intro-survey{background:var(--blue);color:#fff;border-color:var(--blue)}

@@ -2,24 +2,27 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="light">
 <title>닷컴버블 모의투자</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-:root{--bg:#fff;--fg:#111;--mut:#666;--line:#ddd;--up:#d33;--dn:#26c;--acc:#0a7}
-@media(prefers-color-scheme:dark){:root{--bg:#141414;--fg:#eee;--mut:#999;--line:#333}}
-body{margin:0;padding:16px;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,sans-serif;max-width:1100px;margin:auto}
-h1{font-size:18px;margin:0 0 8px}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
-button,select,input{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
-button{cursor:pointer}button.buy{border-color:var(--up);color:var(--up)}button.sell{border-color:var(--dn);color:var(--dn)}
-canvas{width:100%;height:380px;display:block;border:1px solid var(--line);border-radius:8px;touch-action:none}
-table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid var(--line);padding:4px 6px;text-align:right}th:first-child,td:first-child{text-align:left}
+:root{--bg:#f6f7f9;--card:#fff;--line:#e4e7ec;--text:#111827;--muted:#6b7280;--accent:#2563eb;--ok:#059669;--bad:#dc2626;--fg:var(--text);--mut:var(--muted);--up:var(--ok);--dn:var(--bad);--acc:var(--muted)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",system-ui,sans-serif}
+main{max-width:1200px;margin:0 auto;padding:24px 16px}
+h1{font-size:20px;margin:0 0 16px}h3{font-size:14px;color:var(--muted);font-weight:600;margin:24px 0 8px;text-transform:uppercase;letter-spacing:.04em}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+button,select,input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text)}
+button{cursor:pointer}button.buy{color:var(--ok)}button.sell{color:var(--bad)}
+canvas{width:100%;height:380px;display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;touch-action:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:auto}
+table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid var(--line);padding:8px 12px;text-align:right;white-space:nowrap}th{font-size:12px;font-weight:600;color:var(--muted);position:sticky;top:0;background:var(--card)}th:first-child,td:first-child{text-align:left}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.grid{grid-template-columns:1fr}}
-.tag{display:inline-block;padding:1px 6px;border-radius:10px;background:var(--acc);color:#fff;font-size:11px;margin:1px}
-.mut{color:var(--mut)}#hint{min-height:1.5em}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-size:12px;margin:1px}
+.mut{color:var(--muted)}#hint{min-height:1.5em}#sum{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
 </style>
 </head>
 <body>
+<main>
 <h1>닷컴버블 모의투자 (1998-01 ~ 2002-12, 실제 데이터)</h1>
 <div class="row">
   <select id="sym"></select>
@@ -37,10 +40,11 @@ table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px
 </div>
 <div id="hint" class="mut"></div>
 <div class="grid">
-  <div><h3>거래 기록 · 편향 태깅</h3><table id="log"><thead><tr><th>날짜</th><th>종목</th><th>구분</th><th>수량</th><th>가격</th><th>자동 탐지</th><th>내 태그</th></tr></thead><tbody></tbody></table></div>
+  <div><h3>거래 기록 · 편향 태깅</h3><div class="card"><table id="log"><thead><tr><th>날짜</th><th>종목</th><th>구분</th><th>수량</th><th>가격</th><th>자동 탐지</th><th>내 태그</th></tr></thead><tbody></tbody></table></div></div>
   <div><h3>편향 사례 요약</h3><div id="sum"></div>
   <p class="mut">자동 탐지 규칙은 거래 시점 이전 데이터만 사용. 최종 판단은 사람이 태그로 확정.</p></div>
 </div>
+</main>
 <script src="data.js"></script>
 <script>
 // ── 편향 목록 (팀 정의에 맞게 수정) ──
@@ -99,9 +103,9 @@ function draw(){
   d.forEach((x,i)=>{if(x[0].endsWith('-01-02')||x[0].endsWith('-07-01'))g.fillText(x[0].slice(0,7),X(i)-18,H-5)});
   g.strokeStyle=getComputedStyle(document.body).getPropertyValue('--fg'); g.lineWidth=1.5; g.beginPath();
   d.forEach((x,i)=>i?g.lineTo(X(i),Y(x[1])):g.moveTo(X(i),Y(x[1]))); g.stroke();
-  log.filter(t=>t.sym===sym).forEach(t=>{g.fillStyle=t.side>0?'var(--up)':'var(--dn)';g.fillStyle=t.side>0?'#d33':'#26c';g.beginPath();
+  log.filter(t=>t.sym===sym).forEach(t=>{g.fillStyle=t.side>0?'var(--up)':'var(--dn)';g.fillStyle=t.side>0?'#059669':'#dc2626';g.beginPath();
     const x=X(t.day),y=Y(t.p); t.side>0?(g.moveTo(x,y+12),g.lineTo(x-6,y+22),g.lineTo(x+6,y+22)):(g.moveTo(x,y-12),g.lineTo(x-6,y-22),g.lineTo(x+6,y-22)); g.fill();
-    if(t.tags.length){g.fillStyle='#0a7';g.fillText(t.tags.map(k=>BIASES[k]).join(','),x-20,t.side>0?y+34:y-26)}});
+    if(t.tags.length){g.fillStyle='#2563eb';g.fillText(t.tags.map(k=>BIASES[k]).join(','),x-20,t.side>0?y+34:y-26)}});
 }
 function renderLog(){
   const opts=`<option value="">-</option>`+Object.entries(BIASES).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');

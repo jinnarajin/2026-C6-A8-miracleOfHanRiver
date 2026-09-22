@@ -1,9 +1,0 @@
-<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>세 버튼 미리보기</title><link rel="icon" href="data:,"><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./stage2.css"><main id="app"></main><script type="module">
-import {freshRun} from './engine.mjs';
-import {continueFrom1,step2} from './stage2-engine.mjs';
-import {resumeStage2} from './stage2.mjs';
-const previous={cash:3000000,shares:10,health:70,spent:0,bonus:0};
-function restart(){localStorage.removeItem('prototype-campaign-stage2-v2');localStorage.setItem('return2025-stage1-v3',JSON.stringify(freshRun()));location.href='./index.html';}
-function start(){let state=step2(continueFrom1(previous,70000),'leverBuy');state.needSurveyShown=true;localStorage.setItem('prototype-stage2-preview',JSON.stringify(state));resumeStage2(previous,70000,restart,true);}
-start();
-</script></html>
