@@ -1,0 +1,104 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR','WenQuanYi Zen Hei',sans-serif;background:#e8e8e8;padding:40px;width:1800px;color:#1e1e1e}
+h1{font-size:36px;font-weight:900;margin-bottom:6px}.sub{font-size:17px;color:#595959;margin-bottom:28px}
+h2{font-size:24px;font-weight:900;margin:0 0 12px}
+table{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed;margin-bottom:36px}
+th,td{border:1px solid #cfcfcf;padding:10px 10px;font-size:15px;line-height:1.5;vertical-align:middle;text-align:center}
+.week th{background:#2e2e2e;color:#fff;font-size:22px;font-weight:700;padding:14px}
+.date th{background:#7f7f7f;color:#fff;font-size:17px;font-weight:700}
+table td.lab,table th.lab{background:#2e2e2e;color:#fff;font-weight:700;font-size:14px;width:120px}
+.ms td{background:#fff8e1;font-weight:700}.ms td.key{background:#ffd6d6}
+.ke td{background:#f7f5ff}.lc{background:#e3dcff!important;font-weight:700;color:#4b2bb0}.away{background:#e6e6e6!important;font-weight:700;color:#555}
+td.hi{background:#fff3b0;font-weight:700}
+.pair{display:inline-block;background:#e6f4ff;color:#0b5cad;border-radius:6px;padding:0 6px;font-size:12.5px;font-weight:700}
+.dev{display:inline-block;background:#e9f9ee;border-radius:5px;padding:0 3px}
+.past{opacity:.75}
+.roles td{text-align:left;font-size:15.5px;padding:12px 16px}.roles td.lab{text-align:center;font-size:16px}
+.legend{font-size:14px;color:#444;margin:-26px 0 30px}
+.todo{background:#fff0ee;border-radius:10px;padding:18px 22px}.todo li{margin-left:18px;line-height:1.8;font-size:15px}
+</style></head><body>
+<h1>📈 한강의 기적 — 역할 & 전체 일정</h1><div class="sub">아카데미물 주식 게임 · SwiftUI iOS · 10/16 TestFlight → 10/28 출시 → 11/20 Showcase · 기준일 10/12</div>
+<h2>👥 역할</h2><table class="roles"><colgroup><col style="width:120px"><col></colgroup>
+<tr><td class="lab">엘레나</td><td>일정·분배 총괄 · 스탠드업 진행 · 게임 요소·코어 Loop 설계 (초안 → 확정) · Loop 구현 (<span class="pair">+ 훈치</span>) · 주가 엔진·밸런싱 · 빌드·TestFlight 업로드 · 앱스토어 심사 제출</td></tr>
+<tr><td class="lab">훈치</td><td>개발 방향성 리드 (구조·기술 방식·구현 범위) · Loop 구현 (<span class="pair">+ 엘레나</span>) · 해금 로직 · 저장 · 매매 화면 UI · 튜토리얼 리뷰 · LC 발표자료</td></tr>
+<tr><td class="lab">시리우스</td><td>메인 시나리오 (AI 활용) · 게임 요소에 스토리 입히기 · 튜토리얼 대사 · <span class="dev">💻</span> 대사 출력·연출 구현 · <span class="dev">💻</span> 챕터 대사 데이터 입력 · <span class="dev">💻</span> 엔딩 화면</td></tr>
+<tr><td class="lab">아만</td><td>디자인 (HiFi, UI) · 아이콘 ✅ · 보상·해금 연출 · 튜토리얼 화면 · 앱스토어 스크린샷 · 발표 슬라이드</td></tr>
+<tr><td class="lab">남궁</td><td>🎤 LC 영어 발표 · <span class="dev">💻</span> 튜토리얼 구현 · <span class="dev">💻</span> 결과·설정 화면 · <span class="dev">💻</span> UT 반영 UI 수정 · 유저테스트 리드 · 앱 설명 문구 (국·영) · QA</td></tr>
+<tr><td class="lab">전원</td><td>🏆 쇼케이스 발표 (파트 분담) · 🔁 매일 데일리 스탠드업 · 금요일 회고</td></tr>
+</table><div class="legend"><span class="dev">💻</span> 구현 작업 · <span class="pair">+ 이름</span> 같이 하는 사람 · <b style="background:#fff3b0;padding:0 4px">노란 칸</b> 그 사람의 중요한 날</div>
+<table class="past"><colgroup><col style="width:120px"><col><col><col><col><col></colgroup>
+<tr class="week"><th class="lab">Week</th><th colspan="5">Week 5 · 기록</th></tr>
+<tr class="date"><th class="lab">Date</th><th>10/5 (월) 개천절</th><th>10/6 (화)</th><th>10/7 (수)</th><th>10/8 (목)</th><th>10/9 (금) 한글날</th></tr>
+<tr class="ms"><td class="lab">Milestone</td><td></td><td>스토리·Loop 팀별로 정하기</td><td>Lofi · 챌린지 설정</td><td>✅ 두 팀 시나리오 컨셉 선정 → 아카데미물<br>Lofi 기본 기능 개발 시작</td><td></td></tr>
+<tr class="ke"><td class="lab">Key Event</td><td></td><td colspan="2" class="away">훈치 개인일정</td><td></td><td></td></tr>
+</table>
+<table class=""><colgroup><col style="width:120px"><col><col><col><col><col></colgroup>
+<tr class="week"><th class="lab">Week</th><th colspan="5">Week 6</th></tr>
+<tr class="date"><th class="lab">Date</th><th>10/12 (월)</th><th>10/13 (화)</th><th>10/14 (수)</th><th>10/15 (목)</th><th>10/16 (금)</th></tr>
+<tr class="ms"><td class="lab">Milestone</td><td>🔥 전체 회의<br>온보딩·튜토리얼 결정</td><td>HiFi Prototype<br>🎤 LC 리허설 (전원 피드백)</td><td class="key">🎤 LC 발표</td><td>게임 요소·Loop 1차안 확정</td><td class="key">📱 App Prototype (TestFlight)</td></tr>
+<tr class="ke"><td class="lab">Key Event</td><td></td><td></td><td colspan="3" class="lc">Learning Communication (global Academy) · 10/14 – 10/16</td></tr>
+<tr><td class="lab">엘레나</td><td>게임 요소·Loop 초안</td><td>게임 요소·Loop 초안<br>엔진 설계</td><td>스탠드업에서 초안 공유<br>주가 엔진</td><td class="hi">게임 요소·Loop 1차안 확정<br>Loop 구현 <span class="pair">+ 훈치</span></td><td class="hi">📱 TestFlight 업로드</td></tr>
+<tr><td class="lab">훈치</td><td class="hi">LC 발표자료 제작</td><td>개발 세팅<br>Loop 구조 검토</td><td>개발 방향성 정리<br>(Loop 구조·구현 범위)<br>매매 화면</td><td>Loop 구현 <span class="pair">+ 엘레나</span><br>튜토리얼 리뷰 <span class="pair">+ 남궁</span></td><td>버그 픽스</td></tr>
+<tr><td class="lab">시리우스</td><td>세계관·시나리오 뼈대</td><td>튜토리얼 대사 → 훈치</td><td>챕터 1 시나리오<br>대사 데이터 구조 <span class="pair">+ 훈치</span></td><td>게임 요소에 스토리 입히기<br><span class="dev">💻</span> 대사 출력 화면</td><td><span class="dev">💻</span> 챕터 1 대사 입력</td></tr>
+<tr><td class="lab">아만</td><td>HiFi</td><td>HiFi</td><td>HiFi (튜토리얼 화면)</td><td>HiFi (보상·해금 연출)</td><td>HiFi 마무리</td></tr>
+<tr><td class="lab">남궁</td><td class="hi">LC 영어 발표 준비</td><td>🎤 LC 리허설<br>→ 전원 피드백 반영</td><td class="hi">🎤 LC 영어 발표</td><td><span class="dev">💻</span> 튜토리얼 구현 (최소)<br>UT1 테스터 모집</td><td><span class="dev">💻</span> 튜토리얼 마무리<br>TestFlight 빌드 QA</td></tr>
+</table>
+<table class=""><colgroup><col style="width:120px"><col><col><col><col><col></colgroup>
+<tr class="week"><th class="lab">Week</th><th colspan="5">Week 7</th></tr>
+<tr class="date"><th class="lab">Date</th><th>10/19 (월)</th><th>10/20 (화)</th><th>10/21 (수)</th><th>10/22 (목)</th><th>10/23 (금)</th></tr>
+<tr class="ms"><td class="lab">Milestone</td><td></td><td>UT1 준비 완료</td><td class="key">🧪 User Test 1</td><td>피드백 정리</td><td>반영</td></tr>
+<tr><td class="lab">엘레나</td><td>엔진 밸런싱</td><td>Loop 다듬기</td><td>UT 관찰</td><td class="hi">게임 요소·난이도 조정안</td><td>수치 반영</td></tr>
+<tr><td class="lab">훈치</td><td>해금 로직</td><td>저장 기능</td><td>UT 관찰</td><td>반영 범위 판정</td><td>피드백 반영</td></tr>
+<tr><td class="lab">시리우스</td><td><span class="dev">💻</span> 챕터 2 대사 입력</td><td><span class="dev">💻</span> 대사 연출<br>(캐릭터 표정·이름표)</td><td>UT 관찰</td><td>시나리오 수정</td><td><span class="dev">💻</span> 수정 대사 반영</td></tr>
+<tr><td class="lab">아만</td><td>UI 폴리싱</td><td>UT1 준비 <span class="pair">+ 남궁</span></td><td class="hi">🧪 UT1 진행</td><td>디자인 수정</td><td>앱스토어 스크린샷</td></tr>
+<tr><td class="lab">남궁</td><td><span class="dev">💻</span> 결과 화면 구현</td><td>UT1 준비 <span class="pair">+ 아만</span><br>테스터 확정</td><td class="hi">🧪 UT1 진행 리드</td><td>피드백 정리·공유</td><td>앱 설명 문구 (국·영)<br><span class="dev">💻</span> 튜토리얼 수정</td></tr>
+</table>
+<table class=""><colgroup><col style="width:120px"><col><col><col><col><col></colgroup>
+<tr class="week"><th class="lab">Week</th><th colspan="5">Week 8</th></tr>
+<tr class="date"><th class="lab">Date</th><th>10/26 (월)</th><th>10/27 (화)</th><th>10/28 (수)</th><th>10/29 (목)</th><th>10/30 (금)</th></tr>
+<tr class="ms"><td class="lab">Milestone</td><td>📤 심사 제출</td><td>심사 대기</td><td class="key">🚀 AppStore Release</td><td></td><td>인수인계</td></tr>
+<tr><td class="lab">엘레나</td><td class="hi">📱 빌드 업로드<br>📤 심사 제출</td><td>심사 대응</td><td>출시 확인</td><td>업데이트 범위 정리</td><td>인수인계 받기</td></tr>
+<tr><td class="lab">훈치</td><td>출시 빌드 안정화</td><td>버그 픽스</td><td>출시 모니터링</td><td>인수인계 문서 작성</td><td class="hi">인수인계 → 엘레나·남궁·시리우스</td></tr>
+<tr><td class="lab">시리우스</td><td><span class="dev">💻</span> 챕터 3 대사 입력</td><td><span class="dev">💻</span> 챕터 3 연출</td><td>챕터 4 시나리오</td><td><span class="dev">💻</span> 챕터 4 대사 입력</td><td>인수인계 참여</td></tr>
+<tr><td class="lab">아만</td><td>스크린샷 최종</td><td>업데이트 디자인</td><td>업데이트 디자인</td><td>업데이트 디자인</td><td>UT2 준비 <span class="pair">+ 남궁</span></td></tr>
+<tr><td class="lab">남궁</td><td>QA</td><td>QA</td><td>출시 공지·리뷰 수집</td><td><span class="dev">💻</span> 설정 화면 구현</td><td>UT2 준비 <span class="pair">+ 아만</span><br>인수인계 참여</td></tr>
+</table>
+<table class=""><colgroup><col style="width:120px"><col><col><col><col><col></colgroup>
+<tr class="week"><th class="lab">Week</th><th colspan="5">Week 9</th></tr>
+<tr class="date"><th class="lab">Date</th><th>11/2 (월)</th><th>11/3 (화)</th><th>11/4 (수)</th><th>11/5 (목)</th><th>11/6 (금)</th></tr>
+<tr class="ms"><td class="lab">Milestone</td><td class="key">🧪 User Test 2</td><td></td><td>📤 업데이트 심사 제출</td><td>심사 대기</td><td class="key">🔄 AppStore Update</td></tr>
+<tr class="ke"><td class="lab">Key Event</td><td></td><td colspan="3" class="away">훈치 개인일정</td><td></td></tr>
+<tr><td class="lab">엘레나</td><td>UT 관찰</td><td><span class="dev">💻</span> UT2 반영 (엔진·Loop)</td><td class="hi">📱 빌드 업로드<br>📤 업데이트 심사</td><td>심사 대응</td><td>출시 확인</td></tr>
+<tr><td class="lab">훈치</td><td>UT 관찰</td><td>🏖 개인일정</td><td>🏖 개인일정</td><td>🏖 개인일정</td><td>복귀 · 버그 체크</td></tr>
+<tr><td class="lab">시리우스</td><td>UT 관찰</td><td><span class="dev">💻</span> UT2 반영 (대사·스토리)</td><td><span class="dev">💻</span> 챕터 4 마무리</td><td>시나리오 최종</td><td><span class="dev">💻</span> 엔딩 화면 구현</td></tr>
+<tr><td class="lab">아만</td><td class="hi">🧪 UT2 진행</td><td>디자인 수정</td><td>디자인 수정</td><td>발표 슬라이드 구상</td><td>발표 슬라이드</td></tr>
+<tr><td class="lab">남궁</td><td class="hi">🧪 UT2 진행 리드</td><td>피드백 정리<br><span class="dev">💻</span> UI 수정</td><td><span class="dev">💻</span> UI 수정</td><td>QA</td><td>QA</td></tr>
+</table>
+<table class=""><colgroup><col style="width:120px"><col><col><col><col><col></colgroup>
+<tr class="week"><th class="lab">Week</th><th colspan="5">Week 10</th></tr>
+<tr class="date"><th class="lab">Date</th><th>11/9 (월)</th><th>11/10 (화)</th><th>11/11 (수)</th><th>11/12 (목)</th><th>11/13 (금)</th></tr>
+<tr class="ms"><td class="lab">Milestone</td><td>발표 구성 회의 (전원)<br>파트 분담</td><td></td><td></td><td></td><td>🎤 팀 내부 리허설</td></tr>
+<tr><td class="lab">엘레나</td><td>발표 구성</td><td>밸런싱 마무리</td><td>내 파트 대본</td><td>파트 연습</td><td>🎤 리허설</td></tr>
+<tr><td class="lab">훈치</td><td>발표 구성</td><td>폴리싱</td><td>시연 빌드 안정화</td><td>시연 빌드</td><td>🎤 리허설</td></tr>
+<tr><td class="lab">시리우스</td><td>발표 구성</td><td><span class="dev">💻</span> 엔딩 화면 마무리</td><td>세계관 소개 파트</td><td>파트 연습</td><td>🎤 리허설</td></tr>
+<tr><td class="lab">아만</td><td>발표 구성</td><td>슬라이드 디자인</td><td>슬라이드 디자인</td><td>시연 화면 정리</td><td>🎤 리허설</td></tr>
+<tr><td class="lab">남궁</td><td>발표 구성</td><td>UT 결과 데이터 정리</td><td><span class="dev">💻</span> UI 버그 폴리싱</td><td>QA</td><td>🎤 리허설</td></tr>
+</table>
+<table class=""><colgroup><col style="width:120px"><col><col><col><col><col></colgroup>
+<tr class="week"><th class="lab">Week</th><th colspan="5">Week 11</th></tr>
+<tr class="date"><th class="lab">Date</th><th>11/16 (월)</th><th>11/17 (화)</th><th>11/18 (수)</th><th>11/19 (목)</th><th>11/20 (금)</th></tr>
+<tr class="ms"><td class="lab">Milestone</td><td class="key">📊 Product Presentation Review</td><td>수정</td><td class="key">🎭 Showcase Rehearsal</td><td>최종 점검</td><td class="key">🏆 Showcase</td></tr>
+<tr><td class="lab">엘레나</td><td>📊 발표 (내 파트)</td><td>내 파트 수정</td><td>🎭 리허설<br>→ 수정 당일 완료</td><td class="hi">🔒 개인일정<br>18시 이후 연락</td><td class="hi">🏆 발표</td></tr>
+<tr><td class="lab">훈치</td><td>📊 발표</td><td>시연 빌드 최종</td><td>🎭 리허설<br>(개인일정 미확정)</td><td>시연 기기 점검</td><td class="hi">🏆 발표 · 시연</td></tr>
+<tr><td class="lab">시리우스</td><td>📊 발표</td><td>파트 수정</td><td>🎭 리허설</td><td>최종 점검</td><td class="hi">🏆 발표</td></tr>
+<tr><td class="lab">아만</td><td>📊 발표</td><td>슬라이드 수정</td><td>🎭 리허설</td><td>슬라이드 최종 파일</td><td class="hi">🏆 발표</td></tr>
+<tr><td class="lab">남궁</td><td>📊 발표</td><td>QA</td><td>🎭 리허설</td><td class="hi">최종 점검 진행</td><td class="hi">🏆 발표</td></tr>
+</table>
+<div class="todo"><h2>❓ 아직 안 정해진 것</h2><ul>
+<li>게임 컨셉·Loop 변경 → 정해지면 일정 내용 다시 맞추기</li>
+<li>발표 파트 분담 (지금 / 11/9 회의)</li>
+<li>전체 회의 = 데일리 스탠드업인지, 따로 하는 요일이 있는지</li>
+<li>11/18 훈치 개인일정 확정 여부</li></ul></div></body></html>
