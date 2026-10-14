@@ -1,0 +1,39 @@
+<title>LOOP 결산전</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Nanum+Myeongjo:wght@700;800&family=Nanum+Pen+Script&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>:root{color-scheme:dark;background:#05070d}body{background:#05070d}@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}</style>
+<div id="viewport">
+  <div id="stage">
+    <header id="topbar">
+      <div class="brand">LOOP<span>결산전 1 · 1:1</span></div>
+      <div id="round"></div>
+      <ol id="phases"></ol>
+      <div id="rank"></div>
+      <div id="funds"></div>
+      <button id="diaryBtn" class="ghost">📓 일기장</button>
+    </header>
+
+    <main id="board">
+      <section id="center">
+        <div id="newsRow"></div>
+        <div id="market"></div>
+      </section>
+      <aside id="side">
+        <div id="rival"></div>
+        <div id="logWrap" class="panel"><h3>뉴스 · 작전 로그</h3><ol id="log"></ol></div>
+      </aside>
+      <footer id="bottom">
+        <div id="handWrap">
+          <div class="handLabel">손패 <span id="handCount"></span></div>
+          <div id="hand"></div>
+        </div>
+        <div id="action"></div>
+      </footer>
+    </main>
+
+    <div id="overlay"></div>
+    <div id="fx"></div>
+  </div>
+</div>
+<script type="module" src="js/game.js"></script>
