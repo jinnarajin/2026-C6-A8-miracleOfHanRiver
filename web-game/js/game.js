@@ -1,12 +1,14 @@
 import {
-  STOCKS, STOCK_NAMES, LEVERAGES, AMOUNT_STEP, CARDS, CARD_PRICE, MAX_BUYS, ROUNDS,
+  LEVERAGES, AMOUNT_STEP, CARDS, CARD_PRICE, MAX_BUYS, ROUNDS,
   createMatch, settleRound, validatePositions, buyCard, useInformant, result, marginCallPrice, classRank, stars,
 } from './engine.js';
 import { MATCH1, CLASSMATES, STAGES } from './data.js';
 
 const SCRIPT = MATCH1;
 const PHASES = [['briefing', '브리핑'], ['position', '포지션'], ['operation', '작전'], ['settlement', '정산']];
-const STOCK_TAGS = { semi: '성장주', bio: '뉴스 민감', bond: '안전 자산' };
+const STOCKS = SCRIPT.stocks.map(s => s.id);
+const STOCK_NAMES = Object.fromEntries(SCRIPT.stocks.map(s => [s.id, s.name]));
+const STOCK_TAGS = Object.fromEntries(SCRIPT.stocks.map(s => [s.id, s.tag]));
 
 const $ = s => document.querySelector(s);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -32,7 +34,7 @@ function reset() {
     s: createMatch(SCRIPT), phase: 'title', draft: emptyDraft(), committed: [], selCard: null, target: null,
     oppRevealed: false, oppCard: null, hiddenRevealed: false, policyRevealed: false, priceView: null,
     pnlView: null, mcStocks: [], busy: false, log: [], quote: SCRIPT.opponent.intro, dispRound: 1,
-    shown: { me: 100, opp: 100, rank: classRank(0, CLASSMATES), px: { semi: 10, bio: 10, bond: 10 } }, fresh: {}, cleared: null,
+    shown: { me: 100, opp: 100, rank: classRank(0, CLASSMATES), px: Object.fromEntries(SCRIPT.stocks.map(s => [s.id, 10])) }, fresh: {}, cleared: null,
   };
 }
 const emptyDraft = () => Object.fromEntries(STOCKS.map(s => [s, { side: 'none', amount: 0, lev: 1 }]));
@@ -317,6 +319,7 @@ function showReview() {
   }).join('');
   overlay(`<div class="scrim"></div><div class="modal sheet review"><h2>복기 — 왜 그렇게 걸었나?</h2>
     <p>라운드마다 내 판단과 결과를 다시 봅니다. 근거를 설명할 수 있는 투자자가 되는 것이 목표예요.</p>
+    <div class="era"><b>📜 이 판의 시세는 실제 역사였다</b> — ${SCRIPT.era.label}<br><small>${SCRIPT.era.source}: ${SCRIPT.stocks.map(s => `${s.name} = ${s.ref}`).join(' · ')}</small></div>
     <table><tr><th>라운드</th><th>뉴스</th><th>내 포지션</th><th>내 카드</th><th>변동</th><th>내 손익</th><th>상대 손익</th></tr>${rows}</table>
     <div class="btns"><button class="sub" data-go="restart">처음부터 다시</button><button class="cta" data-go="map">스테이지 맵 →</button></div></div>`);
 }

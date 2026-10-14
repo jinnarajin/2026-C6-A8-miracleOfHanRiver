@@ -1,7 +1,5 @@
 // 결산전 엔진: 화면과 분리된 순수 함수. 규칙은 docs/game-design/core-loop.md 기준.
 
-export const STOCKS = ['semi', 'bio', 'bond'];
-export const STOCK_NAMES = { semi: '반도체', bio: '바이오', bond: '국채' };
 export const START_FUND = 100;
 export const START_PRICE = 10;
 export const ROUNDS = 5;
@@ -20,12 +18,14 @@ const r1 = n => Math.round(n * 10) / 10;
 const r2 = n => Math.round(n * 100) / 100;
 
 export function createMatch(script, { assets = 100 } = {}) {
-  const prices = Object.fromEntries(STOCKS.map(s => [s, START_PRICE]));
+  const stocks = script.stocks.map(s => s.id);
+  const prices = Object.fromEntries(stocks.map(s => [s, START_PRICE]));
   return {
     id: script.id,
+    stocks,
     round: 1,
     prices,
-    history: Object.fromEntries(STOCKS.map(s => [s, [START_PRICE]])),
+    history: Object.fromEntries(stocks.map(s => [s, [START_PRICE]])),
     player: { fund: START_FUND, hand: [...script.hand], assets, buys: 0, ko: false },
     opp: { fund: START_FUND, handCount: script.oppHandCount ?? 3, ko: false },
     peeked: false,
@@ -42,7 +42,7 @@ export function marginCallPrice(price, side, leverage) {
 export function validatePositions(state, positions) {
   let total = 0;
   for (const p of positions) {
-    if (!STOCKS.includes(p.stock)) return '알 수 없는 종목';
+    if (!state.stocks.includes(p.stock)) return '알 수 없는 종목';
     if (!['long', 'short'].includes(p.side)) return '방향 오류';
     if (!LEVERAGES.includes(p.leverage)) return '레버리지 오류';
     if (p.amount <= 0 || p.amount % AMOUNT_STEP) return `금액은 ${AMOUNT_STEP} 단위`;
@@ -69,14 +69,14 @@ export function useInformant(state) {
   return { ...state, peeked: true, player: { ...state.player, hand } };
 }
 
-export function computeChanges(round, cards) {
-  const ch = Object.fromEntries(STOCKS.map(s => [s, 0]));
+export function computeChanges(round, cards, stocks) {
+  const ch = Object.fromEntries(stocks.map(s => [s, 0]));
   const add = eff => { for (const [s, v] of Object.entries(eff || {})) ch[s] += v; };
   add(round.public.effect);
   add(round.hidden.effect);
   if (round.policy) add(round.policy.effect);
   for (const c of cards) if (c && CARDS[c.id]?.kind === 'stock') ch[c.target] += CARDS[c.id].effect;
-  for (const s of STOCKS) ch[s] = r2(ch[s]);
+  for (const s of stocks) ch[s] = Math.round(ch[s] * 1000) / 1000;
   return ch;
 }
 
@@ -102,11 +102,11 @@ export function settleRound(state, script, input) {
   const playerCard = input.card || null;
   if (playerCard && !state.player.hand.includes(playerCard.id)) throw new Error('손패에 없는 카드');
   const oppCard = round.opponent.card || null;
-  const changes = computeChanges(round, [playerCard, oppCard]);
+  const changes = computeChanges(round, [playerCard, oppCard], state.stocks);
 
   const prices = {}, history = {};
-  for (const s of STOCKS) {
-    prices[s] = Math.max(1, r2(state.prices[s] * (1 + changes[s])));
+  for (const s of state.stocks) {
+    prices[s] = Math.max(0.5, r2(state.prices[s] * (1 + changes[s])));
     history[s] = [...state.history[s], prices[s]];
   }
 
